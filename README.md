@@ -19,7 +19,8 @@
 1. Скопируйте необходимые файлы в папку /etc/openvpn/, а затем перейдите в нее:
 
 		sudo cp -R /usr/share/easy-rsa /etc/openvpn/
-		cd /etc/openvpn/easy-rsa  
+		cd /etc/openvpn/easy-rsa 
+
 2. Создайте удостоверяющий центр и корневой сертификат:
 
 		export EASYRSA=$(pwd)  
@@ -38,3 +39,33 @@
 2. Переместите в созданную папку сертификат CA:
 		
 		cp /etc/openvpn/easy-rsa/pki/ca.crt /etc/openvpn/certs/ca.crt
+
+## Создание запроса сертификата и закрытого ключа сервера OpenVPN
+1. Создайте закрытый ключ для сервера и файл запроса сертификата с помощью команды:
+
+		./easyrsa gen-req server nopass
+2. Подпишите созданный сертификат ключом сертификационного центра:
+
+		./easyrsa sign-req server server
+
+Затем введите «yes» и нажмите **Enter**. После введите кодовую фразу, которую вы задали при настройке удостоверяющего центра. 
+
+3. Скопируйте сгенерированный сертификат и ключ в директорию /etc/openvpn/certs/:
+		cp /etc/openvpn/easy-rsa/pki/issued/server.crt /etc/openvpn/certs/
+		cp /etc/openvpn/easy-rsa/pki/private/server.key /etc/openvpn/certs/
+
+4. Сгенерируйте файл параметров Diffie–Hellman:
+		
+		openssl dhparam -out /etc/openvpn/certs/dh2048.pem 2048
+
+5. Создайте ключ HMAC с помощью команды:
+
+		openvpn --genkey --secret /etc/openvpn/certs/ta.key
+
+Теперь в директории /etc/openvpn/certs/ должно быть 5 файлов. Проверить это можно с помощью команды:
+
+		ls -l /etc/openvpn/certs/
+
+Вывод должен выглядеть следующим образом:
+
+![Изображение](https://img.reg.ru/news/blog_25082023_image2.png)
